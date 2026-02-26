@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bing-webmaster-cli"
+version = "0.1.0"
+description = "CLI for Bing Webmaster API"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "click>=8.1.7",
+  "requests>=2.32.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2.2",
+  "pytest>=8.2.0",
+  "twine>=5.1.1",
+]
+
+[project.scripts]
+bwm = "bingwm_cli.cli:cli"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.setuptools]
+packages = ["bingwm_cli"]
