@@ -1,18 +1,31 @@
+---
+name: bing-webmaster-cli
+description: Use this skill when working with this repository's `bwm` CLI, including Bing Webmaster API key setup, CLI authentication, site listing, traffic stats, URL index checks with explanation, URL submission, and troubleshooting.
+---
+
 # Bing Webmaster CLI Skill
 
-Use this skill to operate `bing-webmaster-cli` (`bwm`) for Bing Webmaster API tasks.
+Use this skill to operate and troubleshoot the `bwm` CLI in this repository.
 
-## What this CLI does
+## When To Use
 
-- Authenticate with Bing Webmaster API using API key (env var or locally stored key)
-- List sites available to the authenticated account
-- Fetch site and URL traffic stats
-- Check whether a URL is indexed
-- Submit URLs for indexing
+Use this skill when the task involves any of:
+- creating or rotating a Bing Webmaster API key
+- authenticating this CLI with env var or local stored key
+- listing sites in Bing Webmaster
+- fetching site/URL traffic stats
+- checking whether a URL is indexed and why not
+- submitting URLs for indexing
 
-## Install
+## Prerequisites
 
-### Option 1: Install from PyPI with pipx (recommended)
+- Python environment with this project installed (`bwm` command available)
+- Bing Webmaster Tools account with access to at least one site
+- Bing Webmaster API key
+
+## Install This CLI
+
+Recommended (`pipx`, global `bwm` command):
 
 ```bash
 python3 -m pip install --user pipx
@@ -21,41 +34,44 @@ pipx install bing-webmaster-cli
 bwm --version
 ```
 
-### Option 2: Install with pip
-
-```bash
-python3 -m pip install bing-webmaster-cli
-bwm --version
-```
-
-### Option 3: Run from source repo
+From source (development):
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-python3 -m bingwm_cli.cli --help
+bwm --help
 ```
 
-## Create Bing Webmaster API Key
+From source (`pipx`, editable):
 
-1. Sign in to Bing Webmaster Tools: `https://www.bing.com/webmasters/`
-2. Open API access/key management from account settings (as documented in Bing Webmaster “Getting access”).
+```bash
+pipx install -e /absolute/path/to/bing_webmaster_cli
+bwm --help
+```
+
+## Create API Key (Bing Webmaster)
+
+As of February 26, 2026, create a Bing Webmaster API key using these steps:
+
+1. Open Bing Webmaster Tools: `https://www.bing.com/webmasters/`
+2. Sign in and open account/API access settings.
 3. Generate a new API key.
-4. Copy it immediately and store it securely.
+4. Copy and securely store the key.
 
-Reference: `https://learn.microsoft.com/en-us/bingwebmaster/getting-access`
+Reference:
+- `https://learn.microsoft.com/en-us/bingwebmaster/getting-access`
 
-## Configure API key in CLI
+## Authenticate This CLI
 
-### A) Environment variable (best for CI and ephemeral sessions)
+### Environment variable (recommended for CI/ephemeral usage)
 
 ```bash
 export BING_WEBMASTER_API_KEY="<your_api_key>"
 bwm auth whoami
 ```
 
-### B) Local stored key via auth command
+### Local stored key
 
 ```bash
 bwm auth login --api-key "<your_api_key>"
@@ -68,105 +84,104 @@ Interactive prompt:
 bwm auth login
 ```
 
-Clear local stored key:
+Clear local key:
 
 ```bash
 bwm auth clear
 ```
 
-## Optional default site
-
-Set once so `--site` can be omitted in most commands:
+## Optional: Set Default Site
 
 ```bash
 bwm config set default-site https://example.com/
 bwm config get default-site
 ```
 
-## Commands
+When set, commands that accept `--site` can omit it.
 
-## Auth commands
+## Command Reference
+
+Top-level:
+- `bwm --version`
+- `bwm --help`
+
+### `auth`
+
+- `bwm auth login [--api-key TEXT]`
+- `bwm auth whoami [--output table|json]`
+- `bwm auth clear`
+
+### `config`
+
+- `bwm config set default-site SITE_URL`
+- `bwm config get default-site`
+
+### `site`
+
+- `bwm site list [--output table|json|csv] [--csv-path FILE]`
+
+### `stats`
+
+- `bwm stats site [--site SITE] [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--output table|json|csv] [--csv-path FILE]`
+- `bwm stats url [--site SITE] --url URL [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--output table|json|csv] [--csv-path FILE]`
+
+### `url`
+
+- `bwm url check-index [--site SITE] --url URL [--output table|json] [--explain]`
+- `bwm url submit [--site SITE] [--url URL]... [--file FILE] [--output table|json]`
+
+## Quick Examples
 
 ```bash
-bwm auth login --api-key "<your_api_key>"
-bwm auth whoami
-bwm auth clear
-```
-
-## Site commands
-
-List all sites available to the API key:
-
-```bash
-bwm site list
+# List sites
 bwm site list --output json
-bwm site list --output csv --csv-path ./sites.csv
-```
 
-## Stats commands
+# Site stats for a date window
+bwm stats site \
+  --site https://example.com/ \
+  --start-date 2026-02-01 \
+  --end-date 2026-02-26
 
-Site-level traffic/rank stats:
+# URL stats
+bwm stats url \
+  --site https://example.com/ \
+  --url https://example.com/page \
+  --output json
 
-```bash
-bwm stats site --site https://example.com/
-bwm stats site --site https://example.com/ --start-date 2026-02-01 --end-date 2026-02-26
-bwm stats site --site https://example.com/ --output csv --csv-path ./site-stats.csv
-```
+# URL index check with richer explanation
+bwm url check-index \
+  --site https://example.com/ \
+  --url https://example.com/page \
+  --output json \
+  --explain
 
-URL-level traffic stats:
-
-```bash
-bwm stats url --site https://example.com/ --url https://example.com/page
-bwm stats url --site https://example.com/ --url https://example.com/page --output json
-```
-
-## URL commands
-
-Check index status:
-
-```bash
-bwm url check-index --site https://example.com/ --url https://example.com/page
-bwm url check-index --site https://example.com/ --url https://example.com/page --output json
-bwm url check-index --site https://example.com/ --url https://example.com/page --output json --explain
-```
-
-Submit one URL:
-
-```bash
+# Submit one URL
 bwm url submit --site https://example.com/ --url https://example.com/new-page
-```
 
-Submit multiple URLs (repeatable flag):
-
-```bash
-bwm url submit --site https://example.com/ \
-  --url https://example.com/page-a \
-  --url https://example.com/page-b
-```
-
-Submit from file (one URL per line):
-
-```bash
+# Submit batch from file
 bwm url submit --site https://example.com/ --file ./urls.txt
 ```
 
-## Output formats
+## Troubleshooting
 
-Where supported:
+- `Auth error: No API key found...`
+  - set `BING_WEBMASTER_API_KEY` or run `bwm auth login`.
 
-- `--output table` (default)
-- `--output json`
-- `--output csv --csv-path <file>`
+- `No site specified. Pass --site or set one...`
+  - pass `--site` or set default site with `bwm config set default-site ...`.
 
-## Config/environment paths
+- URL appears blocked in Bing UI while simple API fields are sparse
+  - run `bwm url check-index --explain ...` to get best-effort diagnostics from API signals.
 
-- API key env var: `BING_WEBMASTER_API_KEY`
-- Config dir override: `BWM_CONFIG_DIR`
-- Credentials file override: `BWM_CREDENTIALS_FILE`
-- App config file override: `BWM_APP_CONFIG_FILE`
-- API base URL override: `BWM_API_BASE_URL`
+## Config Paths And Overrides
 
-Default local files:
+Defaults:
+- credentials: `~/.config/bing-webmaster-cli/credentials.json`
+- app config: `~/.config/bing-webmaster-cli/config.json`
 
-- `~/.config/bing-webmaster-cli/credentials.json`
-- `~/.config/bing-webmaster-cli/config.json`
+Env overrides:
+- `BING_WEBMASTER_API_KEY`
+- `BWM_CONFIG_DIR`
+- `BWM_CREDENTIALS_FILE`
+- `BWM_APP_CONFIG_FILE`
+- `BWM_API_BASE_URL`
