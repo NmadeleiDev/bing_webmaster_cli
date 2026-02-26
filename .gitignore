@@ -8,3 +8,4 @@ dist/
 build/
 .bwm/
 key.tmp
+tasks/
