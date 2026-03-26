@@ -161,13 +161,13 @@ This repo includes `.github/workflows/publish.yml`.
 
 Release flow:
 
-1. Bump version in `pyproject.toml`.
+1. Bump version in `pyproject.toml` and `bingwm_cli/__init__.py`.
 2. Commit and push.
 3. Tag and push:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 ### Manual publishing

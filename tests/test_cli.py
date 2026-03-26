@@ -2,6 +2,7 @@ from click.testing import CliRunner
 
 from bingwm_cli.cli import cli
 from bingwm_cli.cli import _extract_is_indexed
+from bingwm_cli.output import render_records
 
 
 class FakeClient:
@@ -57,6 +58,34 @@ def test_stats_site_uses_default_site(monkeypatch):
 
     assert result.exit_code == 0
     assert '"Clicks": 10' in result.output
+
+
+def test_stats_site_normalizes_bing_wrapped_dates(monkeypatch):
+    runner = CliRunner()
+    fake = FakeClient()
+
+    def fake_stats(site_url, start_date, end_date):
+        assert site_url == "https://example.com"
+        return [{"Date": "Date(1773471600000-0700)", "Clicks": 10, "Impressions": 100}]
+
+    fake.get_rank_and_traffic_data = fake_stats
+
+    monkeypatch.setattr("bingwm_cli.cli._build_client", lambda write=False: fake)
+    monkeypatch.setattr("bingwm_cli.cli.get_default_site", lambda: "https://example.com")
+
+    result = runner.invoke(cli, ["stats", "site", "--output", "json"])
+
+    assert result.exit_code == 0
+    assert '"Date": "2026-03-14"' in result.output
+
+
+def test_render_records_clears_bing_sentinel_dates():
+    rendered = render_records(
+        [{"DiscoveryDate": "/Date(-62135568000000-0800)/", "Clicks": 1}],
+        output_format="json",
+    )
+
+    assert '"DiscoveryDate": ""' in rendered
 
 
 def test_url_check_index_prints_reason(monkeypatch):
