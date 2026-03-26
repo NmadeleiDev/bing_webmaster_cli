@@ -168,8 +168,8 @@ Release flow:
 3. Tag and push:
 
 ```bash
-git tag v0.1.2
-git push origin v0.1.2
+git tag v0.1.3
+git push origin v0.1.3
 ```
 
 ### Manual publishing
