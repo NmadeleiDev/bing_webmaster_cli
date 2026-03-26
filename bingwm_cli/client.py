@@ -9,6 +9,8 @@ from urllib.parse import urlencode
 
 import requests
 
+from bingwm_cli.dates import coerce_date_value
+
 BING_WEBMASTER_BASE_URL = "https://ssl.bing.com/webmaster/api.svc/json"
 
 
@@ -41,7 +43,8 @@ class BingWebmasterClient:
             "endDate": _format_bing_date(end_date),
         }
         data = self._call("GetRankAndTrafficStats", payload)
-        return _extract_list(data, ["Results", "Data", "Rows"])
+        rows = _extract_list(data, ["Results", "Data", "Rows"])
+        return _filter_rows_by_date_range(rows, start_date, end_date)
 
     def get_url_traffic_info(self, site_url: str, url: str, start_date: date, end_date: date) -> list[dict]:
         payload = {
@@ -53,8 +56,9 @@ class BingWebmasterClient:
         data = self._call("GetUrlTrafficInfo", payload)
         rows = _extract_list(data, ["Results", "Data", "Rows"])
         if rows:
-            return rows
-        return [data] if data else []
+            return _filter_rows_by_date_range(rows, start_date, end_date)
+        fallback_rows = [data] if data else []
+        return _filter_rows_by_date_range(fallback_rows, start_date, end_date)
 
     def get_url_info(self, site_url: str, url: str) -> dict:
         payload = {"siteUrl": site_url, "url": url}
@@ -162,3 +166,12 @@ def _http_mode(method: str) -> str:
     if method.startswith("Get"):
         return "GET"
     return "POST"
+
+
+def _filter_rows_by_date_range(rows: list[dict], start_date: date, end_date: date) -> list[dict]:
+    filtered: list[dict] = []
+    for row in rows:
+        row_date = coerce_date_value(row.get("Date") or row.get("date"))
+        if row_date is None or start_date <= row_date <= end_date:
+            filtered.append(row)
+    return filtered

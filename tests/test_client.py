@@ -78,6 +78,30 @@ def test_get_rank_and_traffic_data_formats_dates():
     assert fake.last_method == "GET"
 
 
+def test_get_rank_and_traffic_data_filters_rows_to_requested_range():
+    client = BingWebmasterClient("k")
+    fake = FakeSession(
+        FakeResponse(
+            payload={
+                "d": {
+                    "GetRankAndTrafficStatsResult": {
+                        "Results": [
+                            {"Date": "2026-03-19", "Clicks": 1},
+                            {"Date": "2026-03-20", "Clicks": 2},
+                            {"Date": "2026-03-21", "Clicks": 3},
+                        ]
+                    }
+                }
+            }
+        )
+    )
+    client.session = fake
+
+    rows = client.get_rank_and_traffic_data("https://example.com", date(2026, 3, 20), date(2026, 3, 20))
+
+    assert rows == [{"Date": "2026-03-20", "Clicks": 2}]
+
+
 def test_get_url_traffic_info_single_object_wrapped_as_row():
     client = BingWebmasterClient("k")
     fake = FakeSession(
@@ -105,6 +129,34 @@ def test_get_url_traffic_info_single_object_wrapped_as_row():
 
     assert len(rows) == 1
     assert rows[0]["Url"] == "https://example.com/p"
+
+
+def test_get_url_traffic_info_filters_rows_to_requested_range():
+    client = BingWebmasterClient("k")
+    fake = FakeSession(
+        FakeResponse(
+            payload={
+                "d": {
+                    "GetUrlTrafficInfoResult": {
+                        "Results": [
+                            {"Date": "Date(1773385200000-0700)", "Clicks": 1},
+                            {"Date": "Date(1773471600000-0700)", "Clicks": 2},
+                        ]
+                    }
+                }
+            }
+        )
+    )
+    client.session = fake
+
+    rows = client.get_url_traffic_info(
+        "https://example.com",
+        "https://example.com/p",
+        date(2026, 3, 14),
+        date(2026, 3, 14),
+    )
+
+    assert rows == [{"Date": "Date(1773471600000-0700)", "Clicks": 2}]
 
 
 def test_api_error_raises_with_status_code():

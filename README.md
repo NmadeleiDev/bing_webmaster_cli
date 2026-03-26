@@ -6,7 +6,7 @@ CLI for Bing Webmaster API using API-key authentication.
 
 - API key auth from `BING_WEBMASTER_API_KEY` or local stored credentials
 - List sites available to your Bing Webmaster account
-- Site and URL traffic stats
+- Site and URL traffic stats with CLI-side date range filtering
 - URL index check with crawl-issue reason hints when URL is not indexed
 - Submit one URL or a batch of URLs for indexing
 - Output formats: `table`, `json`, `csv`
@@ -88,6 +88,8 @@ Site-level stats:
 bwm stats site --site https://example.com --start-date 2026-02-01 --end-date 2026-02-26
 ```
 
+For `stats site` and `stats url`, Bing's API ignores date range parameters on these endpoints. The CLI still accepts `--start-date` and `--end-date`, but applies that filtering locally to the returned rows.
+
 URL-level stats:
 
 ```bash
@@ -166,8 +168,8 @@ Release flow:
 3. Tag and push:
 
 ```bash
-git tag v0.1.1
-git push origin v0.1.1
+git tag v0.1.2
+git push origin v0.1.2
 ```
 
 ### Manual publishing

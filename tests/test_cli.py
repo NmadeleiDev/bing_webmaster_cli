@@ -79,6 +79,15 @@ def test_stats_site_normalizes_bing_wrapped_dates(monkeypatch):
     assert '"Date": "2026-03-14"' in result.output
 
 
+def test_stats_site_help_mentions_local_date_filtering():
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["stats", "site", "--help"])
+
+    assert result.exit_code == 0
+    assert "filters returned rows locally" in result.output
+
+
 def test_render_records_clears_bing_sentinel_dates():
     rendered = render_records(
         [{"DiscoveryDate": "/Date(-62135568000000-0800)/", "Clicks": 1}],

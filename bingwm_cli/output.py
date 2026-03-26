@@ -4,12 +4,9 @@ from __future__ import annotations
 
 import csv
 import json
-import re
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-_BING_DATE_RE = re.compile(r"^/?Date\((?P<millis>-?\d+)(?P<offset>[+-]\d{4})?\)/?$")
-_BING_SENTINEL_MILLIS = -62135568000000
+from bingwm_cli.dates import normalize_bing_date_string
 
 
 def render_records(records: list[dict], output_format: str, csv_path: str | None = None) -> str:
@@ -89,25 +86,4 @@ def _normalize_value(value):
 
 
 def _normalize_bing_date(value: str) -> str:
-    match = _BING_DATE_RE.fullmatch(value.strip())
-    if not match:
-        return value
-
-    millis = int(match.group("millis"))
-    if millis == _BING_SENTINEL_MILLIS:
-        return ""
-
-    offset_text = match.group("offset")
-    tz = timezone.utc
-    if offset_text:
-        sign = 1 if offset_text[0] == "+" else -1
-        hours = int(offset_text[1:3])
-        minutes = int(offset_text[3:5])
-        tz = timezone(sign * timedelta(hours=hours, minutes=minutes))
-
-    dt = datetime.fromtimestamp(millis / 1000, tz=timezone.utc).astimezone(tz)
-    if dt.time() == datetime.min.time():
-        return dt.date().isoformat()
-    if dt.microsecond:
-        return dt.isoformat(timespec="milliseconds")
-    return dt.isoformat(timespec="seconds")
+    return normalize_bing_date_string(value)

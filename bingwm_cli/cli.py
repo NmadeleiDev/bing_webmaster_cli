@@ -155,8 +155,16 @@ def stats() -> None:
 
 @stats.command("site")
 @click.option("--site", "site_url", help="Site URL. Falls back to configured default site.")
-@click.option("--start-date", type=str, help="Start date (YYYY-MM-DD). Defaults to 30 days ago.")
-@click.option("--end-date", type=str, help="End date (YYYY-MM-DD). Defaults to today.")
+@click.option(
+    "--start-date",
+    type=str,
+    help="Start date (YYYY-MM-DD). Defaults to 30 days ago. CLI filters returned rows locally because Bing ignores date range params for this endpoint.",
+)
+@click.option(
+    "--end-date",
+    type=str,
+    help="End date (YYYY-MM-DD). Defaults to today. CLI filters returned rows locally because Bing ignores date range params for this endpoint.",
+)
 @click.option("--output", "output_format", type=click.Choice(["table", "json", "csv"]), default="table")
 @click.option("--csv-path", type=click.Path(dir_okay=False, path_type=str), help="CSV path when --output=csv")
 @command_errors
@@ -167,7 +175,7 @@ def stats_site(
     output_format: str,
     csv_path: str | None,
 ) -> None:
-    """Get site-level rank and traffic statistics."""
+    """Get site-level rank and traffic statistics, filtered locally to the requested date range."""
     resolved_site = _resolve_site(site_url)
     start, end = _resolve_date_range(start_date, end_date)
     client = _build_client()
@@ -179,8 +187,16 @@ def stats_site(
 @stats.command("url")
 @click.option("--site", "site_url", help="Site URL. Falls back to configured default site.")
 @click.option("--url", "url_value", required=True, help="Page URL.")
-@click.option("--start-date", type=str, help="Start date (YYYY-MM-DD). Defaults to 30 days ago.")
-@click.option("--end-date", type=str, help="End date (YYYY-MM-DD). Defaults to today.")
+@click.option(
+    "--start-date",
+    type=str,
+    help="Start date (YYYY-MM-DD). Defaults to 30 days ago. CLI filters returned rows locally because Bing ignores date range params for this endpoint.",
+)
+@click.option(
+    "--end-date",
+    type=str,
+    help="End date (YYYY-MM-DD). Defaults to today. CLI filters returned rows locally because Bing ignores date range params for this endpoint.",
+)
 @click.option("--output", "output_format", type=click.Choice(["table", "json", "csv"]), default="table")
 @click.option("--csv-path", type=click.Path(dir_okay=False, path_type=str), help="CSV path when --output=csv")
 @command_errors
@@ -192,7 +208,7 @@ def stats_url(
     output_format: str,
     csv_path: str | None,
 ) -> None:
-    """Get traffic statistics for a specific URL."""
+    """Get traffic statistics for a specific URL, filtered locally to the requested date range."""
     resolved_site = _resolve_site(site_url)
     start, end = _resolve_date_range(start_date, end_date)
     client = _build_client()
